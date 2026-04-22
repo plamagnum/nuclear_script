@@ -13,38 +13,29 @@
       width: min(360px, calc(100vw - 24px));
       color: #fff; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; font-size: 14px;
       background: rgba(0,0,0,.45); padding: 10px 12px; border-radius: 10px;
-      border: 1px solid rgba(255,255,255,.14);
-      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,.14); backdrop-filter: blur(10px);
+      z-index: 10;
     }
     #ui h1 { margin: 0 0 8px; font-size: 14px; font-weight: 650; }
-    #ui .hint { font-size: 12px; line-height: 1.4; opacity: 0.85; }
+    #ui .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    #ui .hint { font-size: 12px; line-height: 1.4; opacity: 0.85; margin-top: 8px; }
     #ui .pill {
       display: inline-block; padding: 2px 8px; border-radius: 999px;
-      border: 1px solid rgba(255,255,255,.14);
-      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.14); background: rgba(255,255,255,.06);
       margin-right: 6px; font-size: 12px;
     }
     #ui button {
-      margin-top: 8px; padding: 4px 12px;
-      background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.2);
-      color: #fff; border-radius: 6px; font-size: 12px; cursor: pointer;
+      margin-top: 8px; padding: 4px 12px; background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.2); color: #fff; border-radius: 6px; font-size: 12px; cursor: pointer;
     }
-    #ui button:hover { background: rgba(255,255,255,.15); }
   </style>
-
-  <!-- Варіант B: import map для "three" -->
-  <script type="importmap">
-  {
-    "imports": {
-      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"
-    }
-  }
-  </script>
 </head>
-
 <body>
   <div id="ui">
     <h1>АЕС — базова сцена (3D)</h1>
+    <div class="row">
+      <label><input id="chkLabels" type="checkbox" checked> Підписи</label>
+    </div>
     <div class="hint">
       <span class="pill">ЛКМ</span>обертання
       <span class="pill">Колесо</span>масштаб
@@ -52,178 +43,6 @@
     </div>
     <button id="btnReset">⟳ Скинути камеру</button>
   </div>
-
-  <script type="module">
-    import * as THREE from "three";
-    import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/OrbitControls.js";
-
-    // Scene / Camera / Renderer
-    const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x87ceeb);
-    scene.fog = new THREE.Fog(0x87ceeb, 80, 250);
-
-    const camera = new THREE.PerspectiveCamera(55, innerWidth / innerHeight, 0.1, 500);
-    camera.position.set(40, 30, 50);
-
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.setSize(innerWidth, innerHeight);
-    renderer.shadowMap.enabled = true;
-    document.body.appendChild(renderer.domElement);
-
-    const controls = new OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true;
-    controls.target.set(0, 8, 0);
-
-    // Lights
-    scene.add(new THREE.AmbientLight(0xffffff, 0.5));
-
-    const sun = new THREE.DirectionalLight(0xffffff, 1.2);
-    sun.position.set(30, 50, 20);
-    sun.castShadow = true;
-    sun.shadow.mapSize.set(2048, 2048);
-    sun.shadow.camera.left = -60;
-    sun.shadow.camera.right = 60;
-    sun.shadow.camera.top = 60;
-    sun.shadow.camera.bottom = -60;
-    scene.add(sun);
-
-    // Materials
-    const matConcrete = new THREE.MeshStandardMaterial({ color: 0xcccccc, roughness: 0.9 });
-    const matDome     = new THREE.MeshStandardMaterial({ color: 0xeeeeee, roughness: 0.6 });
-    const matRed      = new THREE.MeshStandardMaterial({ color: 0xcc3333, roughness: 0.7 });
-    const matDark     = new THREE.MeshStandardMaterial({ color: 0x555555, roughness: 0.8 });
-    const matGreen    = new THREE.MeshStandardMaterial({ color: 0x3a7d44, roughness: 1.0 });
-    const matWater    = new THREE.MeshStandardMaterial({ color: 0x3399ff, roughness: 0.2, metalness: 0.1, transparent: true, opacity: 0.7 });
-    const matSteam    = new THREE.MeshStandardMaterial({ color: 0xffffff, transparent: true, opacity: 0.35 });
-
-    // Ground
-    const ground = new THREE.Mesh(new THREE.PlaneGeometry(200, 200), matGreen);
-    ground.rotation.x = -Math.PI / 2;
-    ground.receiveShadow = true;
-    scene.add(ground);
-
-    function addMesh(geo, mat, [x,y,z], castShadow = true) {
-      const m = new THREE.Mesh(geo, mat);
-      m.position.set(x,y,z);
-      m.castShadow = castShadow;
-      m.receiveShadow = true;
-      scene.add(m);
-      return m;
-    }
-
-    // Reactor containment
-    addMesh(new THREE.CylinderGeometry(7, 7, 20, 48), matConcrete, [0, 10, 0]);
-    addMesh(new THREE.SphereGeometry(7, 48, 24, 0, Math.PI * 2, 0, Math.PI / 2), matDome, [0, 20, 0]);
-
-    // Cooling towers
-    function createCoolingTower(x, z) {
-      const pts = [];
-      for (let i = 0; i <= 30; i++) {
-        const t = i / 30;
-        const y = t * 28;
-        const r = 6 - 3.5 * Math.sin(t * Math.PI * 0.7) + t * 2.5;
-        pts.push(new THREE.Vector2(r, y));
-      }
-
-      const tower = new THREE.Mesh(new THREE.LatheGeometry(pts, 48), matConcrete);
-      tower.position.set(x, 0, z);
-      tower.castShadow = true;
-      tower.receiveShadow = true;
-      scene.add(tower);
-
-      const steam = new THREE.Mesh(new THREE.SphereGeometry(4.5, 24, 16), matSteam);
-      steam.position.set(x, 30, z);
-      scene.add(steam);
-
-      const steam2 = new THREE.Mesh(new THREE.SphereGeometry(3.5, 24, 16), matSteam);
-      steam2.position.set(x + 1.5, 34, z);
-      scene.add(steam2);
-
-      return { steam, steam2 };
-    }
-
-    const towerA = createCoolingTower(30, 0);
-    const towerB = createCoolingTower(30, -22);
-
-    // Turbine hall
-    addMesh(new THREE.BoxGeometry(16, 10, 12), matConcrete, [-14, 5, 0]);
-    addMesh(new THREE.BoxGeometry(17, 0.6, 13), matDark, [-14, 10.3, 0]);
-
-    // Chimney
-    addMesh(new THREE.CylinderGeometry(0.8, 1, 30, 24), matDark, [-14, 15, 8]);
-    addMesh(new THREE.CylinderGeometry(1.05, 1.05, 1.5, 24), matRed, [-14, 28, 8]);
-    addMesh(new THREE.CylinderGeometry(1.05, 1.05, 1.5, 24), matRed, [-14, 22, 8]);
-
-    // Cooling pond
-    addMesh(new THREE.BoxGeometry(20, 0.4, 10), matWater, [30, 0.2, 14], false);
-
-    // Auxiliary buildings
-    addMesh(new THREE.BoxGeometry(6, 5, 6), matConcrete, [-6, 2.5, -12]);
-    addMesh(new THREE.BoxGeometry(6, 5, 4), matConcrete, [6, 2.5, -12]);
-
-    // Pipes
-    function addPipe(from, to, radius = 0.3) {
-      const a = new THREE.Vector3(...from);
-      const b = new THREE.Vector3(...to);
-      const dir = b.clone().sub(a);
-      const len = dir.length();
-
-      const pipe = new THREE.Mesh(new THREE.CylinderGeometry(radius, radius, len, 12), matDark);
-      pipe.position.copy(a.clone().add(dir.clone().multiplyScalar(0.5)));
-      pipe.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.clone().normalize());
-      pipe.castShadow = true;
-      scene.add(pipe);
-    }
-
-    addPipe([7, 6, 0], [-6, 6, 0]);   // звичайний мінус '-'
-    addPipe([7, 4, 0], [20, 4, 0]);
-
-    // Fence
-    function addFenceSegment(x1, z1, x2, z2) {
-      const len = Math.hypot(x2 - x1, z2 - z1);
-      const fence = new THREE.Mesh(new THREE.BoxGeometry(len, 2, 0.15), matDark);
-      fence.position.set((x1 + x2) / 2, 1, (z1 + z2) / 2);
-      fence.rotation.y = Math.atan2(z2 - z1, x2 - x1);
-      scene.add(fence);
-    }
-
-    const fp = 45;
-    addFenceSegment(-fp, -fp,  fp, -fp);
-    addFenceSegment( fp, -fp,  fp,  fp);
-    addFenceSegment( fp,  fp, -fp,  fp);
-    addFenceSegment(-fp,  fp, -fp, -fp);
-
-    // Animation
-    const clock = new THREE.Clock();
-    function animate() {
-      requestAnimationFrame(animate);
-      const t = clock.getElapsedTime();
-
-      [towerA, towerB].forEach((tw, i) => {
-        const s = 1 + 0.15 * Math.sin(t * 0.8 + i);
-        tw.steam.scale.set(s, s, s);
-        tw.steam.position.y = 30 + Math.sin(t * 0.5 + i) * 0.8;
-        tw.steam2.scale.set(s * 0.9, s * 0.9, s * 0.9);
-        tw.steam2.position.y = 34 + Math.sin(t * 0.6 + i) * 1.0;
-      });
-
-      controls.update();
-      renderer.render(scene, camera);
-    }
-    animate();
-
-    document.getElementById("btnReset").addEventListener("click", () => {
-      camera.position.set(40, 30, 50);
-      controls.target.set(0, 8, 0);
-      controls.update();
-    });
-
-    addEventListener("resize", () => {
-      camera.aspect = innerWidth / innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(innerWidth, innerHeight);
-    });
-  </script>
+  <script type="module" src="./js/scenes/plant-basic.js"></script>
 </body>
 </html>
