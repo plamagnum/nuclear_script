@@ -1,0 +1,588 @@
+<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>АЕС — 3D (з підстанцією, складом, адмінкорпусом, ЛЕП, дорогами)</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { overflow: hidden; background: #1a1a2e; }
+    canvas { display: block; }
+    #info {
+      position: absolute; top: 12px; left: 12px;
+      color: #fff; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; font-size: 14px;
+      background: rgba(0,0,0,.45); padding: 8px 12px; border-radius: 8px;
+      max-width: 520px;
+    }
+    #info b { font-weight: 650; }
+  </style>
+
+  <!-- importmap (варіант B) -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"
+    }
+  }
+  </script>
+</head>
+
+<body>
+  <div id="info">
+    <b>Керування:</b> ЛКМ — обертання · Колесо — масштаб · ПКМ — панорама<br/>
+    <b>Додано:</b> підстанція+трансформатори, адмінкорпус, склад, ЛЕП/опори, дороги
+  </div>
+
+  <script type="module">
+    import * as THREE from "three";
+    import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/OrbitControls.js";
+
+    // ===== Scene / Camera / Renderer =====
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x87ceeb);
+    scene.fog = new THREE.Fog(0x87ceeb, 90, 260);
+
+    const camera = new THREE.PerspectiveCamera(55, innerWidth / innerHeight, 0.1, 700);
+    camera.position.set(55, 38, 65);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(innerWidth, innerHeight);
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    document.body.appendChild(renderer.domElement);
+
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.target.set(0, 10, 0);
+
+    // ===== Lights =====
+    scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+
+    const sun = new THREE.DirectionalLight(0xffffff, 1.15);
+    sun.position.set(55, 75, 35);
+    sun.castShadow = true;
+    sun.shadow.mapSize.set(2048, 2048);
+    sun.shadow.camera.left = -90;
+    sun.shadow.camera.right = 90;
+    sun.shadow.camera.top = 90;
+    sun.shadow.camera.bottom = -90;
+    scene.add(sun);
+
+    // ===== Materials =====
+    const matConcrete = new THREE.MeshStandardMaterial({ color: 0xcccccc, roughness: 0.9 });
+    const matDome     = new THREE.MeshStandardMaterial({ color: 0xeeeeee, roughness: 0.6 });
+    const matRed      = new THREE.MeshStandardMaterial({ color: 0xcc3333, roughness: 0.7 });
+    const matDark     = new THREE.MeshStandardMaterial({ color: 0x555555, roughness: 0.85 });
+    const matGreen    = new THREE.MeshStandardMaterial({ color: 0x3a7d44, roughness: 1.0 });
+    const matWater    = new THREE.MeshStandardMaterial({ color: 0x3399ff, roughness: 0.2, metalness: 0.1, transparent: true, opacity: 0.7 });
+    const matSteam    = new THREE.MeshStandardMaterial({ color: 0xffffff, transparent: true, opacity: 0.35 });
+    const matAsphalt  = new THREE.MeshStandardMaterial({ color: 0x2b2b2b, roughness: 1.0 });
+    const matRoadLine = new THREE.MeshStandardMaterial({ color: 0xf2f2f2, roughness: 0.4 });
+    const matFence    = new THREE.MeshStandardMaterial({ color: 0x2f2f2f, roughness: 0.9 });
+    const matMetal    = new THREE.MeshStandardMaterial({ color: 0x7a7a7a, roughness: 0.45, metalness: 0.4 });
+    const matCopper   = new THREE.MeshStandardMaterial({ color: 0xb87333, roughness: 0.4, metalness: 0.55 });
+
+    // ===== Helpers =====
+    const site = new THREE.Group();
+    scene.add(site);
+
+    function addMesh(geo, mat, pos, { castShadow = true, receiveShadow = true, parent = site, rot = null } = {}) {
+      const m = new THREE.Mesh(geo, mat);
+      m.position.set(pos[0], pos[1], pos[2]);
+      if (rot) m.rotation.set(rot[0], rot[1], rot[2]);
+      m.castShadow = castShadow;
+      m.receiveShadow = receiveShadow;
+      parent.add(m);
+      return m;
+    }
+
+    function addGroup(pos, parent = site) {
+      const g = new THREE.Group();
+      g.position.set(pos[0], pos[1], pos[2]);
+      parent.add(g);
+      return g;
+    }
+
+    // ===== Ground =====
+    const ground = new THREE.Mesh(new THREE.PlaneGeometry(320, 320), matGreen);
+    ground.rotation.x = -Math.PI / 2;
+    ground.receiveShadow = true;
+    scene.add(ground);
+
+    // ===== Base plant (reactor + towers + hall) =====
+    // Reactor containment
+    addMesh(new THREE.CylinderGeometry(7, 7, 20, 48), matConcrete, [0, 10, 0]);
+    addMesh(new THREE.SphereGeometry(7, 48, 24, 0, Math.PI * 2, 0, Math.PI / 2), matDome, [0, 20, 0]);
+
+    // Cooling towers
+    function createCoolingTower(x, z) {
+      const pts = [];
+      for (let i = 0; i <= 30; i++) {
+        const t = i / 30;
+        const y = t * 28;
+        const r = 6 - 3.5 * Math.sin(t * Math.PI * 0.7) + t * 2.5;
+        pts.push(new THREE.Vector2(r, y));
+      }
+      const tower = new THREE.Mesh(new THREE.LatheGeometry(pts, 48), matConcrete);
+      tower.position.set(x, 0, z);
+      tower.castShadow = true;
+      tower.receiveShadow = true;
+      site.add(tower);
+
+      const steam = addMesh(new THREE.SphereGeometry(4.5, 24, 16), matSteam, [x, 30, z], { castShadow: false, receiveShadow: false });
+      const steam2 = addMesh(new THREE.SphereGeometry(3.5, 24, 16), matSteam, [x + 1.5, 34, z], { castShadow: false, receiveShadow: false });
+      return { steam, steam2 };
+    }
+
+    const towerA = createCoolingTower(30, 0);
+    const towerB = createCoolingTower(30, -22);
+
+    // Turbine hall
+    addMesh(new THREE.BoxGeometry(16, 10, 12), matConcrete, [-14, 5, 0]);
+    addMesh(new THREE.BoxGeometry(17, 0.6, 13), matDark, [-14, 10.3, 0]);
+
+    // Chimney
+    addMesh(new THREE.CylinderGeometry(0.8, 1, 30, 24), matDark, [-14, 15, 8]);
+    addMesh(new THREE.CylinderGeometry(1.05, 1.05, 1.5, 24), matRed, [-14, 28, 8]);
+    addMesh(new THREE.CylinderGeometry(1.05, 1.05, 1.5, 24), matRed, [-14, 22, 8]);
+
+    // Cooling pond
+    addMesh(new THREE.BoxGeometry(20, 0.4, 10), matWater, [30, 0.2, 14], { castShadow: false });
+
+    // ===== Roads / Asphalt =====
+    function addRoad({ x, z, w, d, y = 0.03, rotY = 0 }) {
+      const r = addMesh(new THREE.BoxGeometry(w, 0.06, d), matAsphalt, [x, y, z], { castShadow: false, rot: [0, rotY, 0] });
+      // dashed center line (optional, only for longer roads)
+      if (Math.max(w, d) >= 35) {
+        const g = new THREE.Group();
+        g.position.copy(r.position);
+        g.rotation.copy(r.rotation);
+        site.add(g);
+
+        const alongX = w > d;
+        const length = alongX ? w : d;
+        const step = 6;
+        const dashLen = 3.2;
+        const n = Math.floor(length / step);
+
+        for (let i = -n; i <= n; i++) {
+          const dash = new THREE.Mesh(new THREE.BoxGeometry(alongX ? dashLen : 0.3, 0.02, alongX ? 0.3 : dashLen), matRoadLine);
+          dash.position.set(alongX ? i * step : 0, 0.05, alongX ? 0 : i * step);
+          dash.receiveShadow = false;
+          dash.castShadow = false;
+          g.add(dash);
+        }
+      }
+      return r;
+    }
+
+    // Main entrance road + internal roads
+    addRoad({ x: -95, z: -40, w: 160, d: 10, rotY: 0 });         // from outside to site
+    addRoad({ x: -20, z: -10, w: 120, d: 9, rotY: Math.PI / 2 }); // vertical internal
+    addRoad({ x:  10, z: -30, w: 100, d: 9, rotY: 0 });           // horizontal internal
+    addRoad({ x:  55, z: -35, w: 90,  d: 8, rotY: 0 });           // toward substation
+
+    // ===== Admin building =====
+    function addAdminBuilding(x, z) {
+      const g = addGroup([x, 0, z]);
+
+      const body = new THREE.Mesh(
+        new THREE.BoxGeometry(18, 8, 10),
+        new THREE.MeshStandardMaterial({ color: 0xd8d8d8, roughness: 0.9 })
+      );
+      body.position.set(0, 4, 0);
+      body.castShadow = body.receiveShadow = true;
+      g.add(body);
+
+      const glass = new THREE.MeshStandardMaterial({ color: 0x2f6fa3, roughness: 0.1, metalness: 0.2, transparent: true, opacity: 0.65 });
+      for (let i = -7; i <= 7; i += 2.2) {
+        const win = new THREE.Mesh(new THREE.BoxGeometry(1.4, 2.1, 0.12), glass);
+        win.position.set(i, 4.2, 5.06);
+        win.castShadow = false;
+        win.receiveShadow = false;
+        g.add(win);
+      }
+
+      const roof = new THREE.Mesh(new THREE.BoxGeometry(18.6, 0.6, 10.6), matDark);
+      roof.position.set(0, 8.3, 0);
+      roof.castShadow = roof.receiveShadow = true;
+      g.add(roof);
+
+      // small entrance
+      const entry = new THREE.Mesh(new THREE.BoxGeometry(4, 3, 2.2), matConcrete);
+      entry.position.set(-6.5, 1.5, 6.2);
+      entry.castShadow = entry.receiveShadow = true;
+      g.add(entry);
+
+      // parking pad
+      const pad = new THREE.Mesh(new THREE.BoxGeometry(26, 0.08, 16), matAsphalt);
+      pad.position.set(0, 0.04, 18);
+      pad.castShadow = false;
+      pad.receiveShadow = true;
+      g.add(pad);
+
+      return g;
+    }
+    addAdminBuilding(-55, -5);
+
+    // ===== Warehouse =====
+    function addWarehouse(x, z) {
+      const g = addGroup([x, 0, z]);
+
+      const body = new THREE.Mesh(
+        new THREE.BoxGeometry(26, 7, 14),
+        new THREE.MeshStandardMaterial({ color: 0xcfc9bf, roughness: 0.95 })
+      );
+      body.position.set(0, 3.5, 0);
+      body.castShadow = body.receiveShadow = true;
+      g.add(body);
+
+      // gable roof
+      const roof = new THREE.Mesh(
+        new THREE.CylinderGeometry(0, 10.5, 26.6, 4, 1, false),
+        new THREE.MeshStandardMaterial({ color: 0x6a6a6a, roughness: 0.85 })
+      );
+      roof.rotation.z = Math.PI / 2;
+      roof.rotation.y = Math.PI / 4;
+      roof.position.set(0, 8.1, 0);
+      roof.castShadow = roof.receiveShadow = true;
+      g.add(roof);
+
+      // loading doors
+      const doorMat = new THREE.MeshStandardMaterial({ color: 0x8a8a8a, roughness: 0.9 });
+      for (let i = -8; i <= 8; i += 8) {
+        const door = new THREE.Mesh(new THREE.BoxGeometry(4.2, 4.2, 0.2), doorMat);
+        door.position.set(i, 2.3, 7.12);
+        door.castShadow = false;
+        door.receiveShadow = true;
+        g.add(door);
+      }
+
+      // concrete apron
+      const apron = new THREE.Mesh(new THREE.BoxGeometry(34, 0.08, 18), matConcrete);
+      apron.position.set(0, 0.04, 16);
+      apron.castShadow = false;
+      apron.receiveShadow = true;
+      g.add(apron);
+
+      return g;
+    }
+    addWarehouse(-50, -55);
+
+    // ===== Substation with transformers =====
+    function addSubstation(x, z) {
+      const g = addGroup([x, 0, z]);
+
+      // gravel yard base
+      const gravel = new THREE.Mesh(
+        new THREE.BoxGeometry(44, 0.12, 26),
+        new THREE.MeshStandardMaterial({ color: 0xb9b2a7, roughness: 1.0 })
+      );
+      gravel.position.set(0, 0.06, 0);
+      gravel.receiveShadow = true;
+      gravel.castShadow = false;
+      g.add(gravel);
+
+      // perimeter fence
+      const fenceH = 2.2;
+      const fenceT = 0.18;
+      const fenceLenX = 44, fenceLenZ = 26;
+
+      const fenceSegX = new THREE.Mesh(new THREE.BoxGeometry(fenceLenX, fenceH, fenceT), matFence);
+      fenceSegX.position.set(0, fenceH/2, fenceLenZ/2);
+      fenceSegX.castShadow = fenceSegX.receiveShadow = true;
+      g.add(fenceSegX);
+
+      const fenceSegX2 = fenceSegX.clone();
+      fenceSegX2.position.set(0, fenceH/2, -fenceLenZ/2);
+      g.add(fenceSegX2);
+
+      const fenceSegZ = new THREE.Mesh(new THREE.BoxGeometry(fenceT, fenceH, fenceLenZ), matFence);
+      fenceSegZ.position.set(fenceLenX/2, fenceH/2, 0);
+      fenceSegZ.castShadow = fenceSegZ.receiveShadow = true;
+      g.add(fenceSegZ);
+
+      const fenceSegZ2 = fenceSegZ.clone();
+      fenceSegZ2.position.set(-fenceLenX/2, fenceH/2, 0);
+      g.add(fenceSegZ2);
+
+      // Transformer factory
+      function addTransformer(tx, tz) {
+        const tg = new THREE.Group();
+        tg.position.set(tx, 0, tz);
+        g.add(tg);
+
+        // base pad
+        const pad = new THREE.Mesh(new THREE.BoxGeometry(10, 0.35, 6), matConcrete);
+        pad.position.set(0, 0.175, 0);
+        pad.receiveShadow = true;
+        pad.castShadow = false;
+        tg.add(pad);
+
+        // main tank
+        const tank = new THREE.Mesh(new THREE.BoxGeometry(6.8, 2.6, 3.8), matMetal);
+        tank.position.set(0, 1.55, 0);
+        tank.castShadow = tank.receiveShadow = true;
+        tg.add(tank);
+
+        // cooling fins
+        for (let i = -2.7; i <= 2.7; i += 0.6) {
+          const fin = new THREE.Mesh(new THREE.BoxGeometry(0.12, 2.0, 3.4), matMetal);
+          fin.position.set(i, 1.55, -2.3);
+          fin.castShadow = false;
+          fin.receiveShadow = true;
+          tg.add(fin);
+        }
+
+        // bushings (insulators)
+        const insMat = new THREE.MeshStandardMaterial({ color: 0xf0efe9, roughness: 0.95 });
+        for (let i = -2; i <= 2; i += 2) {
+          const b = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.35, 1.6, 16), insMat);
+          b.position.set(i, 3.2, 1.2);
+          b.castShadow = true;
+          b.receiveShadow = true;
+          tg.add(b);
+
+          const cap = new THREE.Mesh(new THREE.SphereGeometry(0.28, 16, 12), matCopper);
+          cap.position.set(i, 4.05, 1.2);
+          cap.castShadow = true;
+          cap.receiveShadow = false;
+          tg.add(cap);
+        }
+
+        // conservator tank
+        const cons = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.6, 5.0, 18), matMetal);
+        cons.rotation.z = Math.PI / 2;
+        cons.position.set(0, 3.0, -0.2);
+        cons.castShadow = cons.receiveShadow = true;
+        tg.add(cons);
+
+        return tg;
+      }
+
+      addTransformer(-12, -5);
+      addTransformer(  0, -5);
+      addTransformer( 12, -5);
+
+      // simple busbars + gantries
+      function addGantries() {
+        const gantryMat = new THREE.MeshStandardMaterial({ color: 0x6f6f6f, roughness: 0.6, metalness: 0.2 });
+        for (let i = -16; i <= 16; i += 8) {
+          const poleL = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.3, 7, 12), gantryMat);
+          poleL.position.set(i, 3.5, 7);
+          poleL.castShadow = poleL.receiveShadow = true;
+          g.add(poleL);
+
+          const cross = new THREE.Mesh(new THREE.BoxGeometry(6, 0.25, 0.25), gantryMat);
+          cross.position.set(i, 6.2, 7);
+          cross.castShadow = cross.receiveShadow = true;
+          g.add(cross);
+        }
+
+        // busbar line
+        const bus = new THREE.Mesh(new THREE.BoxGeometry(36, 0.12, 0.12), matCopper);
+        bus.position.set(0, 6.2, 7);
+        bus.castShadow = false;
+        bus.receiveShadow = false;
+        g.add(bus);
+      }
+      addGantries();
+
+      return g;
+    }
+    const substation = addSubstation(78, -42);
+
+    // ===== Power lines (transmission towers + wires) =====
+    function addTransmissionTower(x, z, { height = 20, yaw = 0 } = {}) {
+      const g = addGroup([x, 0, z]);
+      g.rotation.y = yaw;
+
+      const steel = new THREE.MeshStandardMaterial({ color: 0x606060, roughness: 0.65, metalness: 0.25 });
+
+      // 4 legs
+      const legGeo = new THREE.CylinderGeometry(0.22, 0.35, height, 10);
+      const legPos = [
+        [-1.5, height/2, -1.3],
+        [ 1.5, height/2, -1.3],
+        [-1.1, height/2,  1.4],
+        [ 1.1, height/2,  1.4]
+      ];
+      for (const p of legPos) {
+        const leg = new THREE.Mesh(legGeo, steel);
+        leg.position.set(p[0], p[1], p[2]);
+        leg.castShadow = leg.receiveShadow = true;
+        g.add(leg);
+      }
+
+      // crossarms
+      const arm1 = new THREE.Mesh(new THREE.BoxGeometry(10, 0.35, 0.35), steel);
+      arm1.position.set(0, height * 0.78, 0);
+      arm1.castShadow = arm1.receiveShadow = true;
+      g.add(arm1);
+
+      const arm2 = new THREE.Mesh(new THREE.BoxGeometry(6.5, 0.3, 0.3), steel);
+      arm2.position.set(0, height * 0.9, 0);
+      arm2.castShadow = arm2.receiveShadow = true;
+      g.add(arm2);
+
+      // top mast
+      const mast = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.22, height * 0.25, 10), steel);
+      mast.position.set(0, height * 0.92 + (height * 0.25)/2, 0);
+      mast.castShadow = mast.receiveShadow = true;
+      g.add(mast);
+
+      // attachment points for wires (world positions later)
+      const hooks = {
+        mid: [
+          new THREE.Vector3(-4.5, height * 0.78, 0),
+          new THREE.Vector3( 0.0, height * 0.78, 0),
+          new THREE.Vector3( 4.5, height * 0.78, 0),
+        ],
+        top: [
+          new THREE.Vector3(-3.0, height * 0.9, 0),
+          new THREE.Vector3( 3.0, height * 0.9, 0),
+        ]
+      };
+
+      // small insulators
+      const insMat = new THREE.MeshStandardMaterial({ color: 0xf2f1ec, roughness: 0.95 });
+      for (const v of hooks.mid.concat(hooks.top)) {
+        const ins = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.18, 0.9, 12), insMat);
+        ins.position.copy(v.clone().add(new THREE.Vector3(0, -0.45, 0)));
+        ins.castShadow = true;
+        ins.receiveShadow = true;
+        g.add(ins);
+      }
+
+      g.userData.hooks = hooks;
+      return g;
+    }
+
+    function worldPoint(obj, localVec3) {
+      const v = localVec3.clone();
+      obj.localToWorld(v);
+      return v;
+    }
+
+    function addWire(a, b, { sag = 2.0, color = 0x2a2a2a } = {}) {
+      // simple quadratic curve for sag
+      const mid = a.clone().lerp(b, 0.5);
+      mid.y -= sag;
+
+      const curve = new THREE.QuadraticBezierCurve3(a, mid, b);
+      const points = curve.getPoints(24);
+      const geo = new THREE.BufferGeometry().setFromPoints(points);
+      const mat = new THREE.LineBasicMaterial({ color });
+      const line = new THREE.Line(geo, mat);
+      site.add(line);
+      return line;
+    }
+
+    // Towers line from substation outward
+    const t1 = addTransmissionTower(95, -42, { height: 22, yaw: 0 });
+    const t2 = addTransmissionTower(125, -50, { height: 22, yaw: 0.15 });
+    const t3 = addTransmissionTower(160, -60, { height: 22, yaw: 0.2 });
+
+    // Connect wires between towers (3 фазні + 2 верхні)
+    function connectTowers(A, B) {
+      const Ah = A.userData.hooks, Bh = B.userData.hooks;
+      for (let i = 0; i < 3; i++) {
+        const a = worldPoint(A, Ah.mid[i]);
+        const b = worldPoint(B, Bh.mid[i]);
+        addWire(a, b, { sag: 2.4 });
+      }
+      for (let i = 0; i < 2; i++) {
+        const a = worldPoint(A, Ah.top[i]);
+        const b = worldPoint(B, Bh.top[i]);
+        addWire(a, b, { sag: 1.6, color: 0x333333 });
+      }
+    }
+    connectTowers(t1, t2);
+    connectTowers(t2, t3);
+
+    // Short wires from substation busbar area to first tower (approximate)
+    // (не намагаємось точно прив'язати до шин — просто “вихід” ЛЕП)
+    addWire(new THREE.Vector3(78 + 10, 6.2, -42 + 7), worldPoint(t1, t1.userData.hooks.mid[1]), { sag: 1.8 });
+
+    // ===== Site perimeter fence (big) =====
+    function addFenceRect({ cx, cz, w, d, h = 2, t = 0.15 }) {
+      const g = addGroup([cx, 0, cz]);
+      const segX = new THREE.Mesh(new THREE.BoxGeometry(w, h, t), matFence);
+      segX.position.set(0, h/2, d/2);
+      segX.castShadow = segX.receiveShadow = true;
+      g.add(segX);
+
+      const segX2 = segX.clone();
+      segX2.position.set(0, h/2, -d/2);
+      g.add(segX2);
+
+      const segZ = new THREE.Mesh(new THREE.BoxGeometry(t, h, d), matFence);
+      segZ.position.set(w/2, h/2, 0);
+      segZ.castShadow = segZ.receiveShadow = true;
+      g.add(segZ);
+
+      const segZ2 = segZ.clone();
+      segZ2.position.set(-w/2, h/2, 0);
+      g.add(segZ2);
+
+      return g;
+    }
+    addFenceRect({ cx: -5, cz: -20, w: 150, d: 110, h: 2.2 });
+
+    // ===== Simple lamps along road =====
+    function addLamp(x, z) {
+      const g = addGroup([x, 0, z]);
+      const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.18, 6.5, 12), matMetal);
+      pole.position.set(0, 3.25, 0);
+      pole.castShadow = pole.receiveShadow = true;
+      g.add(pole);
+
+      const arm = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.12, 0.12), matMetal);
+      arm.position.set(0.9, 6.2, 0);
+      arm.castShadow = arm.receiveShadow = true;
+      g.add(arm);
+
+      const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.22, 16, 12), new THREE.MeshStandardMaterial({ color: 0xfff1c2, emissive: 0xffe0a0, emissiveIntensity: 0.6 }));
+      bulb.position.set(1.7, 6.2, 0);
+      bulb.castShadow = false;
+      bulb.receiveShadow = false;
+      g.add(bulb);
+
+      // (декоративне) світло
+      const light = new THREE.PointLight(0xfff1c2, 0.6, 18, 2);
+      light.position.set(1.7, 6.2, 0);
+      g.add(light);
+
+      return g;
+    }
+
+    for (let x = -90; x <= 20; x += 18) addLamp(x, -40);
+
+    // ===== Animation =====
+    const clock = new THREE.Clock();
+    function animate() {
+      requestAnimationFrame(animate);
+      const t = clock.getElapsedTime();
+
+      // steam “breathing”
+      [towerA, towerB].forEach((tw, i) => {
+        const s = 1 + 0.15 * Math.sin(t * 0.8 + i);
+        tw.steam.scale.set(s, s, s);
+        tw.steam.position.y = 30 + Math.sin(t * 0.5 + i) * 0.8;
+        tw.steam2.scale.set(s * 0.9, s * 0.9, s * 0.9);
+        tw.steam2.position.y = 34 + Math.sin(t * 0.6 + i) * 1.0;
+      });
+
+      controls.update();
+      renderer.render(scene, camera);
+    }
+    animate();
+
+    addEventListener("resize", () => {
+      camera.aspect = innerWidth / innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(innerWidth, innerHeight);
+    });
+  </script>
+</body>
+</html>
