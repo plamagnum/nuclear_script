@@ -94,6 +94,7 @@
       <span class="pill">ПКМ</span>панорама
       <br/>Це навчальна візуалізація, не інженерна модель.
     </div>
+    <button id="btnReset" style="margin-top:8px;padding:4px 12px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);color:#fff;border-radius:6px;font-size:12px;cursor:pointer;">⟳ Скинути камеру</button>
   </div>
 
   <div id="footer">Порада: вимкніть “Корпус”, щоб бачити нутрощі ще краще.</div>
@@ -114,6 +115,7 @@
     camera.position.set(22, 18, 28);
 
     const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(innerWidth, innerHeight);
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -344,6 +346,12 @@
       labelRenderer.render(scene, camera);
     }
     animate();
+
+    document.getElementById("btnReset").addEventListener("click", () => {
+      camera.position.set(22, 18, 28);
+      controls.target.set(0, 9, 0);
+      controls.update();
+    });
 
     // ===== Resize =====
     addEventListener("resize", () => {
