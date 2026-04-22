@@ -1,6 +1,6 @@
-# ⚛️ Nuclear Script — 3D-демо АЕС
+# ⚛️ Nuclear Script — 3D-демо електростанцій
 
-Інтерактивні Three.js-візуалізації атомної електростанції та ядерного реактора, створені для навчальних цілей.
+Інтерактивні Three.js-візуалізації атомної, теплової, сонячної, гідроелектростанцій та ядерного реактора, створені для навчальних цілей.
 
 ## Демо-сцени
 
@@ -9,6 +9,9 @@
 | [`plant-basic.html`](plant-basic.html) | АЕС — базова сцена | Реакторний корпус, дві градирні з анімованою парою, машинний зал, димова труба, ставок-охолоджувач, допоміжні будівлі, периметровий паркан, підписи до головних об'єктів |
 | [`plant-extended.html`](plant-extended.html) | АЕС — розширена сцена | Усе з базової сцени + підстанція з трансформаторами та шинами, адмінкорпус, склад, ЛЕП, дороги, ліхтарі, додаткові підписи |
 | [`reactor-cutaway.html`](reactor-cutaway.html) | Реактор — розріз | Спрощена 3D-модель PWR-реактора у розрізі: корпус реактора, теплоносій, активна зона, паливні та керуючі стрижні, CSS2D-підписи, перемикачі видимості шарів |
+| [`thermal-plant.html`](thermal-plant.html) | Теплова електростанція | Котельний цех, турбінний зал, димові труби, вугільний склад, ставок технічної води та підстанція з підписами |
+| [`solar-plant.html`](solar-plant.html) | Сонячна електростанція | Поле сонячних панелей, інверторний майданчик, сервісний модуль, накопичувач енергії та підстанція з підписами |
+| [`hydro-plant.html`](hydro-plant.html) | Гідроелектростанція | Гребля, водосховище, скид води, машинний зал, водоводи та вузол видачі потужності з підписами |
 
 Відкрийте [`index.html`](index.html) для навігаційної сторінки зі списком усіх сцен.
 
@@ -19,7 +22,7 @@
 | Обертання | ЛКМ (drag) |
 | Масштаб | Колесо миші / pinch |
 | Панорама | ПКМ (drag) / два пальці |
-| Показати / приховати підписи | Чекбокс `Підписи` у сценах АЕС |
+| Показати / приховати підписи | Чекбокс `Підписи` у сценах електростанцій |
 | Скинути камеру | Кнопка `⟳ Скинути камеру` |
 
 ## Запуск
@@ -42,6 +45,9 @@ npm run dev
 - `/plant-basic.html`
 - `/plant-extended.html`
 - `/reactor-cutaway.html`
+- `/thermal-plant.html`
+- `/solar-plant.html`
+- `/hydro-plant.html`
 
 ### Production build
 
@@ -67,6 +73,9 @@ nuclear_script/
 ├── plant-basic.html
 ├── plant-extended.html
 ├── reactor-cutaway.html
+├── thermal-plant.html
+├── solar-plant.html
+├── hydro-plant.html
 ├── package.json
 ├── vite.config.js
 ├── js/
@@ -76,14 +85,20 @@ nuclear_script/
 │   │   ├── materials.js
 │   │   └── setup.js
 │   └── scenes/
+│       ├── hydro-plant.js
 │       ├── plant-basic.js
 │       ├── plant-extended.js
 │       ├── plant-shared.js
-│       └── reactor-cutaway.js
+│       ├── reactor-cutaway.js
+│       ├── solar-plant.js
+│       └── thermal-plant.js
 └── README.md
 ```
 
 ## Що вже покращено
+
+- Додано окремі сторінки-демо для ТЕС, СЕС і ГЕС
+- Нові сцени теж використовують спільний Three.js bootstrap, централізовані матеріали й CSS2D-підписи
 
 - Спільний Three.js bootstrap винесено в `js/common/setup.js`
 - Матеріали централізовано в `js/common/materials.js`
@@ -103,7 +118,7 @@ nuclear_script/
 npm run build
 ```
 
-Також вручну перевірено рендеринг сторінок `index.html`, `plant-basic.html`, `plant-extended.html` і `reactor-cutaway.html` через Vite dev server.
+Також вручну перевірено рендеринг сторінок `index.html`, `plant-basic.html`, `plant-extended.html`, `reactor-cutaway.html`, `thermal-plant.html`, `solar-plant.html` і `hydro-plant.html` через Vite dev server.
 
 ## Ліцензія
 

@@ -61,3 +61,45 @@ export function createReactorMaterials() {
     cut: new THREE.MeshStandardMaterial({ color: 0xffc857, roughness: 0.8 }),
   };
 }
+
+export function createEnergyMaterials() {
+  return {
+    grass: new THREE.MeshStandardMaterial({ color: 0x5b8c51, roughness: 1.0 }),
+    hill: new THREE.MeshStandardMaterial({ color: 0x6a9158, roughness: 1.0 }),
+    desert: new THREE.MeshStandardMaterial({ color: 0xcaa96b, roughness: 1.0 }),
+    asphalt: new THREE.MeshStandardMaterial({ color: 0x31343a, roughness: 0.95 }),
+    gravel: new THREE.MeshStandardMaterial({ color: 0xb8b0a1, roughness: 1.0 }),
+    concrete: new THREE.MeshStandardMaterial({ color: 0xcfcfcf, roughness: 0.92 }),
+    industrialWall: new THREE.MeshStandardMaterial({ color: 0xc9c1b5, roughness: 0.9 }),
+    industrialRoof: new THREE.MeshStandardMaterial({ color: 0x66666d, roughness: 0.82 }),
+    stack: new THREE.MeshStandardMaterial({ color: 0x8b8e96, roughness: 0.72 }),
+    stackBand: new THREE.MeshStandardMaterial({ color: 0xc93d3d, roughness: 0.7 }),
+    smoke: new THREE.MeshStandardMaterial({ color: 0xf3f3f3, transparent: true, opacity: 0.45 }),
+    coal: new THREE.MeshStandardMaterial({ color: 0x202020, roughness: 1.0 }),
+    darkMetal: new THREE.MeshStandardMaterial({ color: 0x4b535d, roughness: 0.55, metalness: 0.35 }),
+    metal: new THREE.MeshStandardMaterial({ color: 0x7c838b, roughness: 0.48, metalness: 0.35 }),
+    copper: new THREE.MeshStandardMaterial({ color: 0xb87333, roughness: 0.45, metalness: 0.5 }),
+    water: new THREE.MeshStandardMaterial({
+      color: 0x2f86d6,
+      roughness: 0.18,
+      metalness: 0.08,
+      transparent: true,
+      opacity: 0.74,
+    }),
+    foam: new THREE.MeshStandardMaterial({
+      color: 0xe7f5ff,
+      transparent: true,
+      opacity: 0.58,
+    }),
+    pipe: new THREE.MeshStandardMaterial({ color: 0x8d949a, roughness: 0.6, metalness: 0.22 }),
+    inverter: new THREE.MeshStandardMaterial({ color: 0xefefef, roughness: 0.85 }),
+    panel: new THREE.MeshStandardMaterial({
+      color: 0x18395f,
+      roughness: 0.22,
+      metalness: 0.5,
+      emissive: 0x0e2440,
+      emissiveIntensity: 0.16,
+    }),
+    panelFrame: new THREE.MeshStandardMaterial({ color: 0x8f98a4, roughness: 0.42, metalness: 0.58 }),
+  };
+}
