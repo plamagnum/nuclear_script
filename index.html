@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Nuclear Script — 3D-демо АЕС</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      background: #0b1020;
+      color: #e8eaf0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 48px 16px 64px;
+    }
+
+    header { text-align: center; margin-bottom: 48px; }
+    header h1 {
+      font-size: clamp(1.6rem, 5vw, 2.6rem);
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      background: linear-gradient(135deg, #64b3f4, #c2e59c);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    header p {
+      margin-top: 12px;
+      font-size: 1rem;
+      opacity: 0.7;
+      max-width: 520px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 24px;
+      width: 100%;
+      max-width: 960px;
+    }
+
+    .card {
+      background: rgba(255,255,255,.05);
+      border: 1px solid rgba(255,255,255,.1);
+      border-radius: 16px;
+      padding: 28px 24px 24px;
+      text-decoration: none;
+      color: inherit;
+      transition: background 0.2s, transform 0.2s, border-color 0.2s;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .card:hover {
+      background: rgba(255,255,255,.09);
+      border-color: rgba(100,179,244,.45);
+      transform: translateY(-3px);
+    }
+
+    .card-icon { font-size: 2.2rem; line-height: 1; }
+
+    .card h2 {
+      font-size: 1.05rem;
+      font-weight: 650;
+    }
+
+    .card p {
+      font-size: 0.88rem;
+      opacity: 0.72;
+      line-height: 1.5;
+      flex: 1;
+    }
+
+    .card .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 4px;
+    }
+    .tag {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: rgba(100,179,244,.12);
+      border: 1px solid rgba(100,179,244,.2);
+      color: #a8d4f5;
+    }
+
+    .card .open-btn {
+      margin-top: 8px;
+      display: inline-block;
+      padding: 6px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      background: rgba(100,179,244,.18);
+      border: 1px solid rgba(100,179,244,.3);
+      color: #c2e0f8;
+      text-align: center;
+      transition: background 0.15s;
+    }
+    .card:hover .open-btn {
+      background: rgba(100,179,244,.28);
+    }
+
+    footer {
+      margin-top: 64px;
+      font-size: 12px;
+      opacity: 0.4;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>⚛️ Nuclear Script — 3D-демо</h1>
+    <p>Інтерактивні Three.js-візуалізації атомної, теплової, сонячної, гідро- та вітрової енергетики. Навчальний проєкт.</p>
+  </header>
+
+  <div class="grid">
+
+    <a class="card" href="plant-basic.html">
+      <div class="card-icon">🏭</div>
+      <h2>АЕС — базова сцена</h2>
+      <p>Реакторний корпус, градирні, машинний зал, димова труба, ставок-охолоджувач і допоміжні будівлі.</p>
+      <div class="tags">
+        <span class="tag">Three.js</span>
+        <span class="tag">OrbitControls</span>
+        <span class="tag">Анімація пари</span>
+      </div>
+      <span class="open-btn">Відкрити →</span>
+    </a>
+
+    <a class="card" href="plant-extended.html">
+      <div class="card-icon">🔌</div>
+      <h2>АЕС — розширена сцена</h2>
+      <p>Повна інфраструктура: підстанція з трансформаторами, адмінкорпус, склад, ЛЕП з опорами, дороги, ліхтарі.</p>
+      <div class="tags">
+        <span class="tag">Three.js</span>
+        <span class="tag">ЛЕП / Опори</span>
+        <span class="tag">Підстанція</span>
+      </div>
+      <span class="open-btn">Відкрити →</span>
+    </a>
+
+    <a class="card" href="reactor-cutaway.html">
+      <div class="card-icon">🔬</div>
+      <h2>Реактор — розріз</h2>
+      <p>Спрощена 3D-модель ядерного реактора у розрізі з підписами та перемикачами видимості шарів.</p>
+      <div class="tags">
+        <span class="tag">Three.js</span>
+        <span class="tag">CSS2DRenderer</span>
+        <span class="tag">Підписи</span>
+        <span class="tag">Перемикачі шарів</span>
+      </div>
+      <span class="open-btn">Відкрити →</span>
+    </a>
+
+    <a class="card" href="thermal-plant.html">
+      <div class="card-icon">🔥</div>
+      <h2>Теплова електростанція</h2>
+      <p>Котельний цех, турбінний зал, димові труби, вугільний склад, технічний ставок і підстанція.</p>
+      <div class="tags">
+        <span class="tag">Three.js</span>
+        <span class="tag">ТЕС</span>
+        <span class="tag">Підписи</span>
+      </div>
+      <span class="open-btn">Відкрити →</span>
+    </a>
+
+    <a class="card" href="solar-plant.html">
+      <div class="card-icon">☀️</div>
+      <h2>Сонячна електростанція</h2>
+      <p>Поле фотоелектричних панелей, інвертори, сервісний модуль, накопичувач енергії та підстанція.</p>
+      <div class="tags">
+        <span class="tag">Three.js</span>
+        <span class="tag">СЕС</span>
+        <span class="tag">PV array</span>
+      </div>
+      <span class="open-btn">Відкрити →</span>
+    </a>
+
+    <a class="card" href="hydro-plant.html">
+      <div class="card-icon">💧</div>
+      <h2>Гідроелектростанція</h2>
+      <p>Гребля з водосховищем, скидні потоки, машинний зал, напірні водоводи та вузол видачі потужності.</p>
+      <div class="tags">
+        <span class="tag">Three.js</span>
+        <span class="tag">ГЕС</span>
+        <span class="tag">Вода</span>
+      </div>
+      <span class="open-btn">Відкрити →</span>
+    </a>
+
+    <a class="card" href="wind-plant.html">
+      <div class="card-icon">🌬️</div>
+      <h2>Вітрова електростанція</h2>
+      <p>Вітропарк із декількома турбінами, сервісним модулем, підстанцією та навчальним макетом гондоли.</p>
+      <div class="tags">
+        <span class="tag">Three.js</span>
+        <span class="tag">ВЕС</span>
+        <span class="tag">Турбіни</span>
+      </div>
+      <span class="open-btn">Відкрити →</span>
+    </a>
+
+    <a class="card" href="turbine-generator.html">
+      <div class="card-icon">⚙️</div>
+      <h2>Турбіна і генератор</h2>
+      <p>Навчальна 3D-схема лопаток, вала, ротора генератора, статора з обмотками та вузла виводу потужності.</p>
+      <div class="tags">
+        <span class="tag">Three.js</span>
+        <span class="tag">Розріз</span>
+        <span class="tag">Електромеханіка</span>
+      </div>
+      <span class="open-btn">Відкрити →</span>
+    </a>
+
+  </div>
+
+  <footer>
+    Побудовано на <a href="https://threejs.org" style="color:inherit;">Three.js</a> r160 · Лише для навчальних цілей
+  </footer>
+
+</body>
+</html>

@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Спрощений ядерний реактор у розрізі (3D)</title>
+  <style>
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; overflow: hidden; background: #0b1020; }
+    canvas { display: block; }
+    #ui {
+      position: fixed; top: 12px; left: 12px;
+      width: min(360px, calc(100vw - 24px));
+      background: rgba(0,0,0,.45); color: #fff;
+      border: 1px solid rgba(255,255,255,.14); border-radius: 12px;
+      padding: 10px 10px 8px; font: 14px system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      backdrop-filter: blur(10px); z-index: 10;
+    }
+    #ui h1 { margin: 0 0 8px 0; font-size: 14px; font-weight: 650; }
+    #ui .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    #ui label { display: flex; gap: 8px; align-items: center; user-select: none; }
+    #ui input[type="checkbox"] { transform: translateY(1px); }
+    #ui .hint { margin-top: 8px; opacity: 0.85; font-size: 12px; line-height: 1.35; }
+    #ui .pill {
+      display: inline-block; padding: 2px 8px; border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.14); background: rgba(255,255,255,.06);
+      margin-right: 6px; font-size: 12px;
+    }
+    #ui button {
+      margin-top: 8px; padding: 4px 12px; background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.2); color: #fff; border-radius: 6px; font-size: 12px; cursor: pointer;
+    }
+    #footer {
+      position: fixed; bottom: 10px; left: 12px; color: rgba(255,255,255,.85);
+      font: 12px system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      background: rgba(0,0,0,.35); padding: 6px 10px; border-radius: 10px;
+      border: 1px solid rgba(255,255,255,.12); backdrop-filter: blur(10px); z-index: 10;
+    }
+  </style>
+</head>
+<body>
+  <div id="ui">
+    <h1>Ядерний реактор (спрощено) — розріз + підписи</h1>
+    <div class="row">
+      <label><input id="chkVessel" type="checkbox" checked> Корпус/кришка</label>
+      <label><input id="chkWater" type="checkbox" checked> Теплоносій (вода)</label>
+      <label><input id="chkCore" type="checkbox" checked> Активна зона</label>
+      <label><input id="chkFuel" type="checkbox" checked> Паливні стрижні</label>
+      <label><input id="chkRods" type="checkbox" checked> Керуючі стрижні</label>
+      <label><input id="chkCut" type="checkbox" checked> Межа розрізу</label>
+      <label><input id="chkLabels" type="checkbox" checked> Підписи</label>
+    </div>
+    <div class="hint">
+      <span class="pill">ЛКМ</span>обертання
+      <span class="pill">Колесо</span>масштаб
+      <span class="pill">ПКМ</span>панорама
+      <br/>Це навчальна візуалізація, не інженерна модель.
+    </div>
+    <button id="btnReset">⟳ Скинути камеру</button>
+  </div>
+  <div id="footer">Порада: вимкніть “Корпус”, щоб бачити нутрощі ще краще.</div>
+  <script type="module" src="./js/scenes/reactor-cutaway.js"></script>
+</body>
+</html>
