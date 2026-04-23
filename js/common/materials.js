@@ -101,5 +101,11 @@ export function createEnergyMaterials() {
       emissiveIntensity: 0.16,
     }),
     panelFrame: new THREE.MeshStandardMaterial({ color: 0x8f98a4, roughness: 0.42, metalness: 0.58 }),
+    nacelle: new THREE.MeshStandardMaterial({ color: 0xe6e8eb, roughness: 0.58, metalness: 0.12 }),
+    blade: new THREE.MeshStandardMaterial({ color: 0xf4f5f6, roughness: 0.72, metalness: 0.04 }),
+    bladeTip: new THREE.MeshStandardMaterial({ color: 0xd74848, roughness: 0.66 }),
+    coil: new THREE.MeshStandardMaterial({ color: 0xbf7c38, roughness: 0.44, metalness: 0.52 }),
+    magneticSteel: new THREE.MeshStandardMaterial({ color: 0x5f6973, roughness: 0.52, metalness: 0.36 }),
+    accent: new THREE.MeshStandardMaterial({ color: 0x5fa7ff, roughness: 0.28, metalness: 0.2 }),
   };
 }

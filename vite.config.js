@@ -12,6 +12,8 @@ export default defineConfig({
         thermalPlant: resolve(__dirname, 'thermal-plant.html'),
         solarPlant: resolve(__dirname, 'solar-plant.html'),
         hydroPlant: resolve(__dirname, 'hydro-plant.html'),
+        windPlant: resolve(__dirname, 'wind-plant.html'),
+        turbineGenerator: resolve(__dirname, 'turbine-generator.html'),
       },
     },
   },

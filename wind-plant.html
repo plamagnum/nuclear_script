@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Вітрова електростанція — 3D</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { overflow: hidden; background: #1a1a2e; }
+    canvas { display: block; }
+    #ui {
+      position: absolute; top: 12px; left: 12px;
+      width: min(400px, calc(100vw - 24px));
+      color: #fff; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; font-size: 14px;
+      background: rgba(0,0,0,.45); padding: 10px 12px; border-radius: 10px;
+      border: 1px solid rgba(255,255,255,.14); backdrop-filter: blur(10px);
+      z-index: 10;
+    }
+    #ui h1 { margin: 0 0 8px; font-size: 14px; font-weight: 650; }
+    #ui .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    #ui .hint { font-size: 12px; line-height: 1.4; opacity: 0.85; margin-top: 8px; }
+    #ui .pill {
+      display: inline-block; padding: 2px 8px; border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.14); background: rgba(255,255,255,.06);
+      margin-right: 6px; font-size: 12px;
+    }
+    #ui button {
+      margin-top: 8px; padding: 4px 12px; background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.2); color: #fff; border-radius: 6px; font-size: 12px; cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div id="ui">
+    <h1>ВЕС — навчальна сцена (3D)</h1>
+    <div class="row">
+      <label><input id="chkLabels" type="checkbox" checked> Підписи</label>
+    </div>
+    <div class="hint">
+      <span class="pill">ЛКМ</span>обертання
+      <span class="pill">Колесо</span>масштаб
+      <span class="pill">ПКМ</span>панорама<br/>
+      Вітропарк · турбіни · сервісний модуль · підстанція · внутрішня будова гондоли
+    </div>
+    <button id="btnReset">⟳ Скинути камеру</button>
+  </div>
+  <script type="module" src="./js/scenes/wind-plant.js"></script>
+</body>
+</html>

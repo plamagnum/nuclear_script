@@ -1,6 +1,6 @@
 # ⚛️ Nuclear Script — 3D-демо електростанцій
 
-Інтерактивні Three.js-візуалізації атомної, теплової, сонячної, гідроелектростанцій та ядерного реактора, створені для навчальних цілей.
+Інтерактивні Three.js-візуалізації атомної, теплової, сонячної, гідро-, вітроелектростанцій, ядерного реактора та загальної будови турбіни з генератором, створені для навчальних цілей.
 
 ## Демо-сцени
 
@@ -12,6 +12,8 @@
 | [`thermal-plant.html`](thermal-plant.html) | Теплова електростанція | Котельний цех, турбінний зал, димові труби, вугільний склад, ставок технічної води та підстанція з підписами |
 | [`solar-plant.html`](solar-plant.html) | Сонячна електростанція | Поле сонячних панелей, інверторний майданчик, сервісний модуль, накопичувач енергії та підстанція з підписами |
 | [`hydro-plant.html`](hydro-plant.html) | Гідроелектростанція | Гребля, водосховище, скид води, машинний зал, водоводи та вузол видачі потужності з підписами |
+| [`wind-plant.html`](wind-plant.html) | Вітрова електростанція | Вітропарк, сервісний модуль, кабельна траса, підстанція і навчальний макет гондоли з генератором |
+| [`turbine-generator.html`](turbine-generator.html) | Турбіна і генератор | Спрощений навчальний розріз турбіни та генератора: лопатки, вал, ротор, статор, обмотки й клемний вивід |
 
 Відкрийте [`index.html`](index.html) для навігаційної сторінки зі списком усіх сцен.
 
@@ -48,6 +50,8 @@ npm run dev
 - `/thermal-plant.html`
 - `/solar-plant.html`
 - `/hydro-plant.html`
+- `/wind-plant.html`
+- `/turbine-generator.html`
 
 ### Production build
 
@@ -76,6 +80,8 @@ nuclear_script/
 ├── thermal-plant.html
 ├── solar-plant.html
 ├── hydro-plant.html
+├── wind-plant.html
+├── turbine-generator.html
 ├── package.json
 ├── vite.config.js
 ├── js/
@@ -91,13 +97,16 @@ nuclear_script/
 │       ├── plant-shared.js
 │       ├── reactor-cutaway.js
 │       ├── solar-plant.js
-│       └── thermal-plant.js
+│       ├── thermal-plant.js
+│       ├── turbine-generator.js
+│       └── wind-plant.js
 └── README.md
 ```
 
 ## Що вже покращено
 
-- Додано окремі сторінки-демо для ТЕС, СЕС і ГЕС
+- Додано окремі сторінки-демо для ТЕС, СЕС, ГЕС і ВЕС
+- Додано окрему навчальну сцену із загальною будовою турбіни та генератора
 - Нові сцени теж використовують спільний Three.js bootstrap, централізовані матеріали й CSS2D-підписи
 
 - Спільний Three.js bootstrap винесено в `js/common/setup.js`
@@ -118,7 +127,7 @@ nuclear_script/
 npm run build
 ```
 
-Також вручну перевірено рендеринг сторінок `index.html`, `plant-basic.html`, `plant-extended.html`, `reactor-cutaway.html`, `thermal-plant.html`, `solar-plant.html` і `hydro-plant.html` через Vite dev server.
+Також вручну перевірено рендеринг сторінок `index.html`, `plant-basic.html`, `plant-extended.html`, `reactor-cutaway.html`, `thermal-plant.html`, `solar-plant.html`, `hydro-plant.html`, `wind-plant.html` і `turbine-generator.html` через Vite dev server.
 
 ## Ліцензія
 
